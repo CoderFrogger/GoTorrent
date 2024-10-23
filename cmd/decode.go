@@ -33,16 +33,30 @@ func decodeBenInt(benString string, startPos int) (interface{}, int, error) {
 		decodedInt, err = strconv.Atoi(benString[startPos+2 : benIntEnd])
 		if err != nil {
 			fmt.Println("Error during int decode: ", err)
-			return nil, 0, err
+			return nil, startPos, err
 		}
 		decodedInt = -(decodedInt)
 	} else {
 		decodedInt, err = strconv.Atoi(benString[startPos+1 : benIntEnd])
 		if err != nil {
 			fmt.Println("Error during int decode: ", err)
-			return nil, 0, err
+			return nil, startPos, err
 		}
 	}
 
 	return decodedInt, nextElementIndex, nil
+}
+
+func decodeBenStr(benString string, startPos int) (interface{}, int, error) {
+	firstColonIndex := strings.Index(benString[startPos:], ":") + startPos
+
+	numberSize := len(benString[startPos:firstColonIndex])
+	strLength, err := strconv.Atoi(benString[startPos:firstColonIndex])
+	if err != nil {
+		fmt.Println("Error during string decode: ", err)
+		return "", startPos, err
+	}
+
+	nextElementIndex := startPos + strLength + numberSize + 1
+	return benString[firstColonIndex+1 : firstColonIndex+1+strLength], nextElementIndex, nil
 }
