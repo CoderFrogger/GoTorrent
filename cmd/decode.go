@@ -86,3 +86,47 @@ func decodeBenStr(benString string, startPos int) (interface{}, int, error) {
 	nextElementIndex := startPos + strLength + numberSize + 1
 	return benString[firstColonIndex+1 : firstColonIndex+1+strLength], nextElementIndex, nil
 }
+
+func decodeDictionary(
+	benString string,
+	startPos int,
+) (map[string]interface{}, int, error) {
+	nextElementIndex := startPos + 1
+	var err error
+
+	decodedDict := make(map[string]interface{})
+
+	for benString[nextElementIndex] != 'e' {
+		var decodedKey, decodedValue interface{}
+
+		decodedKey, nextElementIndex, err = decodeBencode(
+			benString,
+			nextElementIndex,
+		)
+		if err != nil {
+			fmt.Println("Error during dictionary decode: ", err)
+			return nil, startPos, err
+		}
+
+		decodedKeyString, ok := decodedKey.(string)
+		if !ok {
+			return nil, startPos, fmt.Errorf(
+				"dictionary key not a string: %q",
+				decodedKeyString,
+			)
+		}
+
+		decodedValue, nextElementIndex, err = decodeBencode(
+			benString,
+			nextElementIndex,
+		)
+		if err != nil {
+			fmt.Println("Error during dictionary decode: ", err)
+			return nil, startPos, err
+		}
+
+		decodedDict[decodedKeyString] = decodedValue
+	}
+
+	return decodedDict, nextElementIndex, nil
+}
