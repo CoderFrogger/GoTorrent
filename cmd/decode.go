@@ -12,11 +12,11 @@ func decodeBencode(benString string, startPos int) (interface{}, int, error) {
 	case benString[startPos] == 'i':
 		return decodeBenInt(benString, startPos)
 	case benString[startPos] == 'l':
-		return nil, 0, nil
+		return decodeBenList(benString, startPos)
 	case unicode.IsDigit(rune(benString[startPos])):
-		return nil, 0, nil
+		return decodeBenString(benString, startPos)
 	case benString[startPos] == 'd':
-		return nil, 0, nil
+		return decodeBenDictionary(benString, startPos)
 	default:
 		return nil, 0, nil
 
@@ -47,7 +47,7 @@ func decodeBenInt(benString string, startPos int) (interface{}, int, error) {
 	return decodedInt, nextElementIndex, nil
 }
 
-func decodeList(benString string, startPos int) ([]interface{}, int, error) {
+func decodeBenList(benString string, startPos int) ([]interface{}, int, error) {
 	nextElementIndex := startPos + 1
 	var err error
 
@@ -73,7 +73,7 @@ func decodeList(benString string, startPos int) ([]interface{}, int, error) {
 	return decodedList, nextElementIndex, nil
 }
 
-func decodeBenStr(benString string, startPos int) (interface{}, int, error) {
+func decodeBenString(benString string, startPos int) (interface{}, int, error) {
 	firstColonIndex := strings.Index(benString[startPos:], ":") + startPos
 
 	numberSize := len(benString[startPos:firstColonIndex])
@@ -87,7 +87,7 @@ func decodeBenStr(benString string, startPos int) (interface{}, int, error) {
 	return benString[firstColonIndex+1 : firstColonIndex+1+strLength], nextElementIndex, nil
 }
 
-func decodeDictionary(
+func decodeBenDictionary(
 	benString string,
 	startPos int,
 ) (map[string]interface{}, int, error) {
