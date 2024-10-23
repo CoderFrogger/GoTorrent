@@ -7,23 +7,23 @@ import (
 	"unicode"
 )
 
-func decodeBencode(benString string, startPos int) (interface{}, int, error) {
+func DecodeBencode(benString string, startPos int) (interface{}, int, error) {
 	switch {
 	case benString[startPos] == 'i':
-		return decodeBenInt(benString, startPos)
+		return DecodeBenInt(benString, startPos)
 	case benString[startPos] == 'l':
-		return decodeBenList(benString, startPos)
+		return DecodeBenList(benString, startPos)
 	case unicode.IsDigit(rune(benString[startPos])):
-		return decodeBenString(benString, startPos)
+		return DecodeBenString(benString, startPos)
 	case benString[startPos] == 'd':
-		return decodeBenDictionary(benString, startPos)
+		return DecodeBenDictionary(benString, startPos)
 	default:
 		return nil, 0, nil
 
 	}
 }
 
-func decodeBenInt(benString string, startPos int) (interface{}, int, error) {
+func DecodeBenInt(benString string, startPos int) (interface{}, int, error) {
 	benIntEnd := strings.Index(benString[startPos:], "e") + startPos
 	var decodedInt int
 	var err error
@@ -47,7 +47,7 @@ func decodeBenInt(benString string, startPos int) (interface{}, int, error) {
 	return decodedInt, nextElementIndex, nil
 }
 
-func decodeBenList(benString string, startPos int) ([]interface{}, int, error) {
+func DecodeBenList(benString string, startPos int) ([]interface{}, int, error) {
 	nextElementIndex := startPos + 1
 	var err error
 
@@ -56,7 +56,7 @@ func decodeBenList(benString string, startPos int) ([]interface{}, int, error) {
 	for benString[nextElementIndex] != 'e' {
 		var decodedElement interface{}
 
-		decodedElement, nextElementIndex, err = decodeBencode(
+		decodedElement, nextElementIndex, err = DecodeBencode(
 			benString,
 			nextElementIndex,
 		)
@@ -73,7 +73,7 @@ func decodeBenList(benString string, startPos int) ([]interface{}, int, error) {
 	return decodedList, nextElementIndex, nil
 }
 
-func decodeBenString(benString string, startPos int) (interface{}, int, error) {
+func DecodeBenString(benString string, startPos int) (interface{}, int, error) {
 	firstColonIndex := strings.Index(benString[startPos:], ":") + startPos
 
 	numberSize := len(benString[startPos:firstColonIndex])
@@ -87,7 +87,7 @@ func decodeBenString(benString string, startPos int) (interface{}, int, error) {
 	return benString[firstColonIndex+1 : firstColonIndex+1+strLength], nextElementIndex, nil
 }
 
-func decodeBenDictionary(
+func DecodeBenDictionary(
 	benString string,
 	startPos int,
 ) (map[string]interface{}, int, error) {
@@ -99,7 +99,7 @@ func decodeBenDictionary(
 	for benString[nextElementIndex] != 'e' {
 		var decodedKey, decodedValue interface{}
 
-		decodedKey, nextElementIndex, err = decodeBencode(
+		decodedKey, nextElementIndex, err = DecodeBencode(
 			benString,
 			nextElementIndex,
 		)
@@ -116,7 +116,7 @@ func decodeBenDictionary(
 			)
 		}
 
-		decodedValue, nextElementIndex, err = decodeBencode(
+		decodedValue, nextElementIndex, err = DecodeBencode(
 			benString,
 			nextElementIndex,
 		)
