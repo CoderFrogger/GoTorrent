@@ -47,6 +47,32 @@ func decodeBenInt(benString string, startPos int) (interface{}, int, error) {
 	return decodedInt, nextElementIndex, nil
 }
 
+func decodeList(benString string, startPos int) ([]interface{}, int, error) {
+	nextElementIndex := startPos + 1
+	var err error
+
+	decodedList := make([]interface{}, 0, 4)
+
+	for benString[nextElementIndex] != 'e' {
+		var decodedElement interface{}
+
+		decodedElement, nextElementIndex, err = decodeBencode(
+			benString,
+			nextElementIndex,
+		)
+		if err != nil {
+			fmt.Println("Error during list decode: ", err)
+			return nil, startPos, err
+		}
+
+		decodedList = append(decodedList, decodedElement)
+	}
+	if nextElementIndex != len(benString) {
+		nextElementIndex++
+	}
+	return decodedList, nextElementIndex, nil
+}
+
 func decodeBenStr(benString string, startPos int) (interface{}, int, error) {
 	firstColonIndex := strings.Index(benString[startPos:], ":") + startPos
 
