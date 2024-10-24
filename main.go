@@ -8,18 +8,6 @@ import (
 	"GoTorrent/cmd"
 )
 
-type Torrent struct {
-	Announce string `bencode:"announce"`
-	Info     Info   `bencode:"info"`
-}
-
-type Info struct {
-	Name        string `bencode:"name"`
-	Length      int    `bencode:"length"`
-	PieceLength int    `bencode:"piece length"`
-	Pieces      string `bencode:"pieces"`
-}
-
 func main() {
 	switch command := os.Args[1]; command {
 	case "decode":
@@ -28,13 +16,32 @@ func main() {
 		decodedInput, _, err := cmd.DecodeBencode(benString, 0)
 		if err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
 
 		jsonOutput, _ := json.Marshal(decodedInput)
 		fmt.Println(string(jsonOutput))
 
 	case "info":
+		torrentFileName := os.Args[2]
+
+		decodedTorrent, err := cmd.ReadTorrentFile(torrentFileName)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("Tracker URL: %v\n", decodedTorrent.Announce)
+		fmt.Printf("Length: %v\n", decodedTorrent.Info.Length)
+		fmt.Printf("Info Hash: %x\n", decodedTorrent.Info.HexHash())
+		fmt.Printf("Piece Length: %v\n", decodedTorrent.Info.PieceLength)
+		fmt.Printf("Piece Hashes: \n")
+
+		piecesHashes := []byte(decodedTorrent.Info.Pieces)
+		for i := 0; i <= len(piecesHashes)-20; i += 20 {
+			fmt.Printf("%x\n", piecesHashes[i:i+20])
+		}
+
 	case "peers":
 	case "handshake":
 	default:
