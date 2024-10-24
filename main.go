@@ -8,18 +8,6 @@ import (
 	"GoTorrent/cmd"
 )
 
-type Torrent struct {
-	Announce string `bencode:"announce"`
-	Info     Info   `bencode:"info"`
-}
-
-type Info struct {
-	Name        string `bencode:"name"`
-	Length      int    `bencode:"length"`
-	PieceLength int    `bencode:"piece length"`
-	Pieces      string `bencode:"pieces"`
-}
-
 func main() {
 	switch command := os.Args[1]; command {
 	case "decode":
@@ -28,13 +16,17 @@ func main() {
 		decodedInput, _, err := cmd.DecodeBencode(benString, 0)
 		if err != nil {
 			fmt.Println(err)
-			return
+			os.Exit(1)
 		}
 
 		jsonOutput, _ := json.Marshal(decodedInput)
 		fmt.Println(string(jsonOutput))
 
 	case "info":
+		torrentFileName := os.Args[2]
+
+		// decodedTorrent, err := cmd.ReadTorrentFile(torrentFileName)
+
 	case "peers":
 	case "handshake":
 	default:
