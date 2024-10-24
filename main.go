@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -78,6 +79,36 @@ func main() {
 		}
 
 	case "handshake":
+		torrentFileName := os.Args[2]
+
+		decodedTorrent, err := cmd.ReadTorrentFile(torrentFileName)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		peerAddress := os.Args[3]
+		if peerAddress == "" {
+			fmt.Println("Peer ip and port required")
+			return
+		}
+
+		tcpHandshake := cmd.CreateTCPHandshakeMessage(cmd.TCPHandshake{
+			Length:       byte(19),
+			ProtocolName: "BitTorrent protocol",
+			Reserved:     [8]byte{},
+			InfoHash:     decodedTorrent.Info.HexHash(),
+			PeerID:       cmd.GenerateRandomPeerID(),
+		})
+
+		conn, tcpResponse, err := cmd.ConnectWithPeer(peerAddress, tcpHandshake)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		defer conn.Close()
+		fmt.Printf("Peer ID: %s\n", hex.EncodeToString(tcpResponse.PeerID))
+
 	default:
 		fmt.Println("Unknown command: " + command)
 		os.Exit(1)
