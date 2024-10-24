@@ -43,6 +43,40 @@ func main() {
 		}
 
 	case "peers":
+		torrentFileName := os.Args[2]
+
+		decodedTorrent, err := cmd.ReadTorrentFile(torrentFileName)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		trackerResponse, err := cmd.DiscoverPeers(decodedTorrent)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		peers := make([]string, 0)
+		for i := 0; i < len(trackerResponse.Peers); i += 6 {
+			peerIP := fmt.Sprintf(
+				"%d.%d.%d.%d",
+				trackerResponse.Peers[i],
+				trackerResponse.Peers[i+1],
+				trackerResponse.Peers[i+2],
+				trackerResponse.Peers[i+3],
+			)
+			peerPort := int(
+				trackerResponse.Peers[i+4],
+			)<<8 | int(
+				trackerResponse.Peers[i+5],
+			)
+			peerAdr := fmt.Sprintf("%s:%d", peerIP, peerPort)
+
+			peers = append(peers, peerAdr)
+			fmt.Printf("%s\n", peerAdr)
+		}
+
 	case "handshake":
 	default:
 		fmt.Println("Unknown command: " + command)
