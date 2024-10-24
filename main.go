@@ -33,7 +33,7 @@ func main() {
 
 		fmt.Printf("Tracker URL: %v\n", decodedTorrent.Announce)
 		fmt.Printf("Length: %v\n", decodedTorrent.Info.Length)
-		// fmt.Printf("Info Hash: %x\n", decodedTorrent.Info)
+		fmt.Printf("Info Hash: %x\n", decodedTorrent.Info.HexHash())
 		fmt.Printf("Piece Length: %v\n", decodedTorrent.Info.PieceLength)
 		fmt.Printf("Piece Hashes: \n")
 
