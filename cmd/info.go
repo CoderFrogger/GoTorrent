@@ -29,7 +29,11 @@ func ReadTorrentFile(torrentFileName string) (Torrent, error) {
 	}
 
 	torrent.Announce = decodedFile["announce"].(string)
-	torrent.Info = decodedFile["info"].(Info)
+
+	torrent.Info.Name = decodedFile["info"].(map[string]interface{})["name"].(string)
+	torrent.Info.Length = decodedFile["info"].(map[string]interface{})["length"].(int)
+	torrent.Info.PieceLength = decodedFile["info"].(map[string]interface{})["piece length"].(int)
+	torrent.Info.Pieces = decodedFile["info"].(map[string]interface{})["pieces"].(string)
 
 	return torrent, nil
 }

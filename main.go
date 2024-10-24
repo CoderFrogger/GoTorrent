@@ -25,7 +25,22 @@ func main() {
 	case "info":
 		torrentFileName := os.Args[2]
 
-		// decodedTorrent, err := cmd.ReadTorrentFile(torrentFileName)
+		decodedTorrent, err := cmd.ReadTorrentFile(torrentFileName)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("Tracker URL: %v\n", decodedTorrent.Announce)
+		fmt.Printf("Length: %v\n", decodedTorrent.Info.Length)
+		// fmt.Printf("Info Hash: %x\n", decodedTorrent.Info)
+		fmt.Printf("Piece Length: %v\n", decodedTorrent.Info.PieceLength)
+		fmt.Printf("Piece Hashes: \n")
+
+		piecesHashes := []byte(decodedTorrent.Info.Pieces)
+		for i := 0; i <= len(piecesHashes)-20; i += 20 {
+			fmt.Printf("%x\n", piecesHashes[i:i+20])
+		}
 
 	case "peers":
 	case "handshake":
