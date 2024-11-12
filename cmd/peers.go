@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -15,7 +16,7 @@ type TrackerResponse struct {
 func DiscoverPeers(torrent Torrent) (TrackerResponse, error) {
 	query := url.Values{}
 	query.Add(("info_hash"), string(torrent.Info.HexHash()))
-	query.Add("peer_id", "00112233445566778899")
+	query.Add("peer_id", string(GenerateRandomPeerID()))
 	query.Add("port", "6881")
 	query.Add("uploaded", "0")
 	query.Add("downloaded", "0")
@@ -24,18 +25,27 @@ func DiscoverPeers(torrent Torrent) (TrackerResponse, error) {
 
 	response, err := http.Get(torrent.Announce + "?" + query.Encode())
 	if err != nil {
-		return TrackerResponse{}, err
+		return TrackerResponse{}, fmt.Errorf(
+			"Error getting response from peer: %s\n",
+			err,
+		)
 	}
 	defer response.Body.Close()
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		return TrackerResponse{}, err
+		return TrackerResponse{}, fmt.Errorf(
+			"Error reading response: %s\n",
+			err,
+		)
 	}
 
 	buffer, _, err := DecodeBenDictionary(string(body), 0)
 	if err != nil {
-		return TrackerResponse{}, err
+		return TrackerResponse{}, fmt.Errorf(
+			"Error decoding dictionary: %s\n",
+			err,
+		)
 	}
 
 	var tracker TrackerResponse
