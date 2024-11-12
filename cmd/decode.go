@@ -7,15 +7,23 @@ import (
 	"unicode"
 )
 
+const (
+	BenInt        = 'i'
+	BenList       = 'l'
+	BenDictionary = 'd'
+	IntegerEnd    = "e"
+	ListEnd       = 'e'
+)
+
 func DecodeBencode(benString string, startPos int) (interface{}, int, error) {
 	switch {
-	case benString[startPos] == 'i':
+	case benString[startPos] == BenInt:
 		return DecodeBenInt(benString, startPos)
-	case benString[startPos] == 'l':
+	case benString[startPos] == BenList:
 		return DecodeBenList(benString, startPos)
 	case unicode.IsDigit(rune(benString[startPos])):
 		return DecodeBenString(benString, startPos)
-	case benString[startPos] == 'd':
+	case benString[startPos] == BenDictionary:
 		return DecodeBenDictionary(benString, startPos)
 	default:
 		return nil, 0, nil
@@ -24,7 +32,7 @@ func DecodeBencode(benString string, startPos int) (interface{}, int, error) {
 }
 
 func DecodeBenInt(benString string, startPos int) (interface{}, int, error) {
-	benIntEnd := strings.Index(benString[startPos:], "e") + startPos
+	benIntEnd := strings.Index(benString[startPos:], IntegerEnd) + startPos
 	var decodedInt int
 	var err error
 	nextElementIndex := benIntEnd + 1
@@ -96,7 +104,7 @@ func DecodeBenDictionary(
 
 	decodedDict := make(map[string]interface{})
 
-	for benString[nextElementIndex] != 'e' {
+	for benString[nextElementIndex] != ListEnd {
 		var decodedKey, decodedValue interface{}
 
 		decodedKey, nextElementIndex, err = DecodeBencode(
