@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -19,13 +20,13 @@ type Info struct {
 func ReadTorrentFile(torrentFileName string) (Torrent, error) {
 	file, err := os.ReadFile(torrentFileName)
 	if err != nil {
-		return Torrent{}, err
+		return Torrent{}, fmt.Errorf("Failed to read file: %s\n", err)
 	}
 
 	var torrent Torrent
 	decodedFile, _, err := DecodeBenDictionary(string(file), 0)
 	if err != nil {
-		return Torrent{}, err
+		return Torrent{}, fmt.Errorf("Failed to decode torrent file: %s\n", err)
 	}
 
 	torrent.Announce = decodedFile["announce"].(string)
