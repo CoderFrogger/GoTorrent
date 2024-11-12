@@ -9,9 +9,16 @@ import (
 	"GoTorrent/cmd"
 )
 
+const (
+	decode    = "decode"
+	info      = "info"
+	peers     = "peers"
+	handshake = "handshake"
+)
+
 func main() {
 	switch command := os.Args[1]; command {
-	case "decode":
+	case decode:
 		benString := os.Args[2]
 
 		decodedInput, _, err := cmd.DecodeBencode(benString, 0)
@@ -23,7 +30,7 @@ func main() {
 		jsonOutput, _ := json.Marshal(decodedInput)
 		fmt.Println(string(jsonOutput))
 
-	case "info":
+	case info:
 		torrentFileName := os.Args[2]
 
 		decodedTorrent, err := cmd.ReadTorrentFile(torrentFileName)
@@ -43,7 +50,7 @@ func main() {
 			fmt.Printf("%x\n", piecesHashes[i:i+20])
 		}
 
-	case "peers":
+	case peers:
 		torrentFileName := os.Args[2]
 
 		decodedTorrent, err := cmd.ReadTorrentFile(torrentFileName)
@@ -78,7 +85,7 @@ func main() {
 			fmt.Printf("%s\n", peerAdr)
 		}
 
-	case "handshake":
+	case handshake:
 		torrentFileName := os.Args[2]
 
 		decodedTorrent, err := cmd.ReadTorrentFile(torrentFileName)
