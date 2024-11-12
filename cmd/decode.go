@@ -7,24 +7,35 @@ import (
 	"unicode"
 )
 
+const (
+	BenInt        = 'i'
+	BenList       = 'l'
+	BenDictionary = 'd'
+	IntegerEnd    = "e"
+	ListEnd       = 'e'
+)
+
 func DecodeBencode(benString string, startPos int) (interface{}, int, error) {
 	switch {
-	case benString[startPos] == 'i':
+	case benString[startPos] == BenInt:
 		return DecodeBenInt(benString, startPos)
-	case benString[startPos] == 'l':
+	case benString[startPos] == BenList:
 		return DecodeBenList(benString, startPos)
 	case unicode.IsDigit(rune(benString[startPos])):
 		return DecodeBenString(benString, startPos)
-	case benString[startPos] == 'd':
+	case benString[startPos] == BenDictionary:
 		return DecodeBenDictionary(benString, startPos)
 	default:
-		return nil, 0, nil
+		return nil, 0, fmt.Errorf(
+			"Unknown bencode case: %x\n",
+			benString[startPos],
+		)
 
 	}
 }
 
 func DecodeBenInt(benString string, startPos int) (interface{}, int, error) {
-	benIntEnd := strings.Index(benString[startPos:], "e") + startPos
+	benIntEnd := strings.Index(benString[startPos:], IntegerEnd) + startPos
 	var decodedInt int
 	var err error
 	nextElementIndex := benIntEnd + 1
@@ -32,15 +43,13 @@ func DecodeBenInt(benString string, startPos int) (interface{}, int, error) {
 	if benString[1] == '-' {
 		decodedInt, err = strconv.Atoi(benString[startPos+2 : benIntEnd])
 		if err != nil {
-			fmt.Println("Error during int decode: ", err)
-			return nil, startPos, err
+			return nil, startPos, fmt.Errorf("Strconv failed: %x\n", err)
 		}
 		decodedInt = -(decodedInt)
 	} else {
 		decodedInt, err = strconv.Atoi(benString[startPos+1 : benIntEnd])
 		if err != nil {
-			fmt.Println("Error during int decode: ", err)
-			return nil, startPos, err
+			return nil, startPos, fmt.Errorf("Strconv failed: %x\n", err)
 		}
 	}
 
@@ -53,7 +62,7 @@ func DecodeBenList(benString string, startPos int) ([]interface{}, int, error) {
 
 	decodedList := make([]interface{}, 0, 4)
 
-	for benString[nextElementIndex] != 'e' {
+	for benString[nextElementIndex] != ListEnd {
 		var decodedElement interface{}
 
 		decodedElement, nextElementIndex, err = DecodeBencode(
@@ -61,8 +70,10 @@ func DecodeBenList(benString string, startPos int) ([]interface{}, int, error) {
 			nextElementIndex,
 		)
 		if err != nil {
-			fmt.Println("Error during list decode: ", err)
-			return nil, startPos, err
+			return nil, startPos, fmt.Errorf(
+				"List bencode decode failed: %x\n",
+				err,
+			)
 		}
 
 		decodedList = append(decodedList, decodedElement)
@@ -79,8 +90,7 @@ func DecodeBenString(benString string, startPos int) (interface{}, int, error) {
 	numberSize := len(benString[startPos:firstColonIndex])
 	strLength, err := strconv.Atoi(benString[startPos:firstColonIndex])
 	if err != nil {
-		fmt.Println("Error during string decode: ", err)
-		return "", startPos, err
+		return "", startPos, fmt.Errorf("Integer conversion failed: %x\n", err)
 	}
 
 	nextElementIndex := startPos + strLength + numberSize + 1
@@ -96,7 +106,7 @@ func DecodeBenDictionary(
 
 	decodedDict := make(map[string]interface{})
 
-	for benString[nextElementIndex] != 'e' {
+	for benString[nextElementIndex] != ListEnd {
 		var decodedKey, decodedValue interface{}
 
 		decodedKey, nextElementIndex, err = DecodeBencode(
@@ -104,8 +114,10 @@ func DecodeBenDictionary(
 			nextElementIndex,
 		)
 		if err != nil {
-			fmt.Println("Error during dictionary decode: ", err)
-			return nil, startPos, err
+			return nil, startPos, fmt.Errorf(
+				"Dictionary key decode failed: %x\n",
+				err,
+			)
 		}
 
 		decodedKeyString, ok := decodedKey.(string)
@@ -121,8 +133,10 @@ func DecodeBenDictionary(
 			nextElementIndex,
 		)
 		if err != nil {
-			fmt.Println("Error during dictionary decode: ", err)
-			return nil, startPos, err
+			return nil, startPos, fmt.Errorf(
+				"Dictionary value decode failed: %x\n",
+				err,
+			)
 		}
 
 		decodedDict[decodedKeyString] = decodedValue
