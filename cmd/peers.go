@@ -15,7 +15,7 @@ type TrackerResponse struct {
 func DiscoverPeers(torrent Torrent) (TrackerResponse, error) {
 	query := url.Values{}
 	query.Add(("info_hash"), string(torrent.Info.HexHash()))
-	query.Add("peer_id", "00112233445566778899")
+	query.Add("peer_id", string(GenerateRandomPeerID()))
 	query.Add("port", "6881")
 	query.Add("uploaded", "0")
 	query.Add("downloaded", "0")
