@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 
 	"GoTorrent/cmd"
@@ -23,8 +24,7 @@ func main() {
 
 		decodedInput, _, err := cmd.DecodeBencode(benString, 0)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 
 		jsonOutput, _ := json.Marshal(decodedInput)
@@ -35,8 +35,7 @@ func main() {
 
 		decodedTorrent, err := cmd.ReadTorrentFile(torrentFileName)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 
 		fmt.Printf("Tracker URL: %v\n", decodedTorrent.Announce)
@@ -55,14 +54,12 @@ func main() {
 
 		decodedTorrent, err := cmd.ReadTorrentFile(torrentFileName)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 
 		trackerResponse, err := cmd.DiscoverPeers(decodedTorrent)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 
 		peers := make([]string, 0)
@@ -90,14 +87,12 @@ func main() {
 
 		decodedTorrent, err := cmd.ReadTorrentFile(torrentFileName)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 
 		peerAddress := os.Args[3]
 		if peerAddress == "" {
-			fmt.Println("Peer ip and port required")
-			return
+			log.Fatal("Peer IP address required")
 		}
 
 		tcpHandshake := cmd.CreateTCPHandshakeMessage(cmd.TCPHandshake{
@@ -110,14 +105,12 @@ func main() {
 
 		conn, tcpResponse, err := cmd.ConnectWithPeer(peerAddress, tcpHandshake)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			log.Fatal(err)
 		}
 		defer conn.Close()
 		fmt.Printf("Peer ID: %s\n", hex.EncodeToString(tcpResponse.PeerID))
 
 	default:
-		fmt.Println("Unknown command: " + command)
-		os.Exit(1)
+		log.Fatal("Unknown command: " + command)
 	}
 }
